@@ -162,8 +162,8 @@ cython_debug/
 #.idea/
 <<<<<<< HEAD
 =======
-train.csv
-test.csv
-sample_submission.csv
+# train.csv
+# test.csv
+# sample_submission.csv
 playground-series-s3e8.zip
 >>>>>>> master
