@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/GGLB-BLR-310/Desktop/Ml-ops-Gems-Model-Tools/mlruns/0/60f373abd0a64ee7beac41566044a26e/artifacts
+end_time: 1734608775287
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 60f373abd0a64ee7beac41566044a26e
+run_name: gaudy-rook-224
+run_uuid: 60f373abd0a64ee7beac41566044a26e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734608772435
+status: 4
+tags: []
+user_id: GGLB-BLR-310
