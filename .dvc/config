@@ -1,0 +1,4 @@
+[core]
+    remote = gem_data
+['remote "gem_data"']
+    url = ../remotestorage
