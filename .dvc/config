@@ -1,4 +1,6 @@
 [core]
-    remote = gem_data
+    remote = storage
 ['remote "gem_data"']
     url = ../remotestorage
+['remote "storage"']
+    url = gdrive://1DkCLOaLQ1sQgg72aksoD-L2Y46ZjV_uV
