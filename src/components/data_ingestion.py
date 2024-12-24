@@ -25,7 +25,8 @@ class DataIngestion:
     def initiate_data_ingestion(self):
         logging.info("data ingestion started")
         try:
-            data=pd.read_csv("https://raw.githubusercontent.com/ZeeshanAhmed95/Ml-ops-Gems-Model-Tools/main/train.csv")
+            # data=pd.read_csv("https://raw.githubusercontent.com/ZeeshanAhmed95/Ml-ops-Gems-Model-Tools/main/train.csv")
+            data = pd.read_csv(r"data\train.csv")
             logging.info(" reading a df")
 
             os.makedirs(os.path.dirname(os.path.join(self.ingestion_config.raw_data_path)),exist_ok=True)

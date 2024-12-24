@@ -1,6 +1,11 @@
 [core]
-    remote = storage
+    remote = localstorge
 ['remote "gem_data"']
     url = ../remotestorage
 ['remote "storage"']
     url = gdrive://1DkCLOaLQ1sQgg72aksoD-L2Y46ZjV_uV
+    gdrive_acknowledge_abuse = true
+['remote "newstorage"']
+    url = gdrive://1DkCLOaLQ1sQgg72aksoD-L2Y46ZjV_uV
+['remote "localstorge"']
+    url = \remotestorage
