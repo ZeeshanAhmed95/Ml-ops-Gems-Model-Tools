@@ -21,44 +21,54 @@ with DAG(dag_id='gem_training_pipeline',
          schedule_interval='@daily',
          tags=["machine_learning ","classification","gemstone"],
          catchup=False) as dag:
-    
-    dag.doc_md = __doc__
 
     @task()
     def data_ingestion():
         """Ingesting data from sources"""
         try:
             train_data_path,test_data_path=training_pipeline.start_data_ingestion()
-            return train_data_path,test_data_path
+            ingestion_result = {"train_data_path": train_data_path, "test_data_path": test_data_path}
+            return ingestion_result
         
         except Exception as e:
-            logging.info('Exception occured during data ingestion in airflow training:', e)
-            raise customexception(e,sys)
+            print(e)
+            # logging.info('Exception occured during data ingestion in airflow training:', e)
+            # raise customexception(e,sys)
         
     @task()
-    def data_transformation(train_data_path,test_data_path):
-        """Transform the extracted weather data."""
-        train_arr,test_arr=training_pipeline.start_data_transformation(train_data_path,test_data_path)
-        return train_arr,test_arr
-    
-    @task()
-    def model_trainer(train_arr,test_arr):
-        """Load transformed data into PostgreSQL."""
-        train_arr=np.array(train_arr)
-        test_arr=np.array(test_arr)
-        training_pipeline.start_model_training(train_arr,test_arr)
+    def data_transformation(ingestion_result):
+        """Transform the extracted data."""
+        try:
+            train_arr,test_arr=training_pipeline.start_data_transformation(ingestion_result["train_data_path"],ingestion_result["test_data_path"])
+            transformation_result = {"train_arr":train_arr,"test_arr":test_arr}
+            return transformation_result
+        except Exception as e:
+            print(e)
 
     @task()
-    def push_to_s3():
+    def model_trainer(transformation_result):
+        """Training the model."""
+        try:
+            train_arr=np.array(transformation_result["train_arr"])
+            test_arr=np.array(transformation_result["test_arr"])
+            model = training_pipeline.start_model_training(train_arr,test_arr)
+            training_result = {"model": model}
+            return training_result
+        except Exception as e:
+            print(e)
+    @task()
+    def push_to_s3(training_result):
+        model = training_result[model]
         bucket_name=os.getenv("BUCKET_NAME")
         artifact_folder="/app/artifacts"
-        os.system(f"aws s3 sync {artifact_folder} s3:/{bucket_name}/artifact")
+        pass
+        # os.system(f"aws s3 sync {artifact_folder} s3:/{bucket_name}/artifact")
     
     ## DAG Worflow- ETL Pipeline
-    train_data_path,test_data_path= data_ingestion()
-    transformed_data=data_transformation(train_data_path,test_data_path)
-    model_trainer(transformed_data)
-    push_to_s3()
+    ingestion_result = data_ingestion()
+    transformed_data=data_transformation(ingestion_result)
+    training_result = model_trainer(transformed_data)
+    push_to_s3(training_result)
 
 
         

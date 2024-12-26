@@ -9,8 +9,9 @@ from src.components.model_evaluation import ModelEvaluation
 
 import os
 import sys
-from src.logger import logging
-from src.exception import customexception
+from src.logger.logging import logging
+from src.exception.exception import customexception
+
 import pandas as pd
 class TrainingPipeline:
     def start_data_ingestion(self):
