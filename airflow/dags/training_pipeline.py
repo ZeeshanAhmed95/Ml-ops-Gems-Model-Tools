@@ -1,14 +1,18 @@
 from airflow import DAG
 from airflow.decorators import task
 from airflow.utils.dates import days_ago
-import requests
-import json
+import sys
+import os
+import numpy as np
 from src.pipeline.training_pipeline import TrainingPipeline
+from src.logger.logging import logging
+from src.exception.exception import customexception
 
 default_args={
     'owner':'airflow',
     'start_date':days_ago(1)
 }
+training_pipeline=TrainingPipeline()
 
 ## DAG
 with DAG(dag_id='gem_training_pipeline',
@@ -16,82 +20,46 @@ with DAG(dag_id='gem_training_pipeline',
          description="it is my training pipeline",
          schedule_interval='@daily',
          tags=["machine_learning ","classification","gemstone"],
-         catchup=False) as dags:
+         catchup=False) as dag:
     
+    dag.doc_md = __doc__
+
     @task()
-    def extract_weather_data():
-        """Extract weather data from Open-Meteo API using Airflow Connection."""
-
-        # Use HTTP Hook to get connection details from Airflow connection
-
-        http_hook=HttpHook(http_conn_id=API_CONN_ID,method='GET')
-
-        ## Build the API endpoint
-        ## https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current_weather=true
-        endpoint=f'/v1/forecast?latitude={LATITUDE}&longitude={LONGITUDE}&current_weather=true'
-
-        ## Make the request via the HTTP Hook
-        response=http_hook.run(endpoint)
-
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise Exception(f"Failed to fetch weather data: {response.status_code}")
+    def data_ingestion():
+        """Ingesting data from sources"""
+        try:
+            train_data_path,test_data_path=training_pipeline.start_data_ingestion()
+            return train_data_path,test_data_path
+        
+        except Exception as e:
+            logging.info('Exception occured during data ingestion in airflow training:', e)
+            raise customexception(e,sys)
         
     @task()
-    def transform_weather_data(weather_data):
+    def data_transformation(train_data_path,test_data_path):
         """Transform the extracted weather data."""
-        current_weather = weather_data['current_weather']
-        transformed_data = {
-            'latitude': LATITUDE,
-            'longitude': LONGITUDE,
-            'temperature': current_weather['temperature'],
-            'windspeed': current_weather['windspeed'],
-            'winddirection': current_weather['winddirection'],
-            'weathercode': current_weather['weathercode']
-        }
-        return transformed_data
+        train_arr,test_arr=training_pipeline.start_data_transformation(train_data_path,test_data_path)
+        return train_arr,test_arr
     
     @task()
-    def load_weather_data(transformed_data):
+    def model_trainer(train_arr,test_arr):
         """Load transformed data into PostgreSQL."""
-        pg_hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
-        conn = pg_hook.get_conn()
-        cursor = conn.cursor()
+        train_arr=np.array(train_arr)
+        test_arr=np.array(test_arr)
+        training_pipeline.start_model_training(train_arr,test_arr)
 
-        # Create table if it doesn't exist
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS weather_data (
-            latitude FLOAT,
-            longitude FLOAT,
-            temperature FLOAT,
-            windspeed FLOAT,
-            winddirection FLOAT,
-            weathercode INT,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-        """)
-
-        # Insert transformed data into the table
-        cursor.execute("""
-        INSERT INTO weather_data (latitude, longitude, temperature, windspeed, winddirection, weathercode)
-        VALUES (%s, %s, %s, %s, %s, %s)
-        """, (
-            transformed_data['latitude'],
-            transformed_data['longitude'],
-            transformed_data['temperature'],
-            transformed_data['windspeed'],
-            transformed_data['winddirection'],
-            transformed_data['weathercode']
-        ))
-
-        conn.commit()
-        cursor.close()
-
+    @task()
+    def push_to_s3():
+        bucket_name=os.getenv("BUCKET_NAME")
+        artifact_folder="/app/artifacts"
+        os.system(f"aws s3 sync {artifact_folder} s3:/{bucket_name}/artifact")
+    
     ## DAG Worflow- ETL Pipeline
-    weather_data= extract_weather_data()
-    transformed_data=transform_weather_data(weather_data)
-    load_weather_data(transformed_data)
+    train_data_path,test_data_path= data_ingestion()
+    transformed_data=data_transformation(train_data_path,test_data_path)
+    model_trainer(transformed_data)
+    push_to_s3()
+
 
         
     
