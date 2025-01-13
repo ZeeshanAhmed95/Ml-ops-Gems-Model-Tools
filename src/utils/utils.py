@@ -52,5 +52,48 @@ def load_object(file_path):
     except Exception as e:
         logging.info('Exception Occured in load_object function utils')
         raise customexception(e,sys)
+    
+
+
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+
+# Constants
+SERVICE_ACCOUNT_FILE = "service_account.json"
+SCOPES = ['https://www.googleapis.com/auth/drive']
+PARENT_FOLDER_ID = '1q-Wyq_W6f9taSz460gofn6U-SroW8xXK'
+
+def authenticate():
+    """Authenticate with Google Drive using a service account."""
+    creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    return creds
+
+def upload_file_gdrive(file_path, file_name, mime_type):
+    """
+    Upload a file to Google Drive.
+
+    Args:
+        file_path (str): The local path to the file.
+        file_name (str): The name to assign to the file on Google Drive.
+        mime_type (str): The MIME type of the file being uploaded.
+    """
+    creds = authenticate()
+    service = build('drive', 'v3', credentials=creds)
+
+    file_metadata = {
+        'name': file_name,
+        'parents': [PARENT_FOLDER_ID]
+    }
+
+    media = MediaFileUpload(file_path, mimetype=mime_type)
+
+    file = service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields='id'
+    ).execute()
+
+    print(f"File '{file_name}' uploaded successfully with ID: {file.get('id')}")
 
     

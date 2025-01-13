@@ -8,5 +8,5 @@ Flask
 mlflow==2.2.2
 dvc
 apache-airflow
-
+google-api-python-client
 -e .

@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/GGLB-BLR-310/Desktop/Ml-ops-Gems-Model-Tools/mlruns/0/011fc449f53f445abefcad5c49798d8f/artifacts
+end_time: 1736335747672
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 011fc449f53f445abefcad5c49798d8f
+run_name: handsome-duck-655
+run_uuid: 011fc449f53f445abefcad5c49798d8f
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1736335744989
+status: 3
+tags: []
+user_id: PAS-GLB-BLR-302
