@@ -61,7 +61,7 @@ class ModelTrainer:
                  obj=best_model
             )
           
-
+            return self.model_trainer_config.trained_model_file_path
         except Exception as e:
             logging.info('Exception occured at Model Training')
             raise customexception(e,sys)
