@@ -165,4 +165,4 @@ test.csv
 sample_submission.csv
 playground-series-s3e8.zip
 remotestorage
-src/utils/service_account.json/
+src\utils\service_account.json
