@@ -34,8 +34,7 @@ class TrainingPipeline:
     def start_model_training(self,train_arr,test_arr):
         try:
             model_trainer=ModelTrainer()
-            model_path=model_trainer.initate_model_training(train_arr,test_arr)
-            return model_path
+            model_trainer.initate_model_training(train_arr,test_arr)
         except Exception as e:
             raise customexception(e,sys)
                 
